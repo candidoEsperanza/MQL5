@@ -1,0 +1,52 @@
+#include  <Trade\Trade.mqh>
+CTrade trade;  
+
+double EMA200_Handle = iMA(_Symbol,PERIOD_CURRENT,200 , 0 , MODE_EMA , PRICE_CLOSE);
+double EMA50_Handle = iMA(_Symbol,PERIOD_CURRENT,50 , 0 , MODE_EMA , PRICE_CLOSE);
+double EMA20_Handle = iMA(_Symbol,PERIOD_CURRENT,20 , 0 , MODE_EMA , PRICE_CLOSE);
+
+double EMA200_List[] ,EMA50_List[] ,EMA20_List[] , PrecioCierre[];
+
+double STOP_LOSS = 200;
+double TAKE_PROFIT = 400;
+void OnInit()
+ { 
+     //Añadir indicadoresde forma visual al grafico
+     ChartIndicatorAdd(ChartID(),0,(int)EMA50_Handle); 
+ }
+
+//----------------------------------------------------------------------------------------------------------------------------------\\
+
+void OnTick()
+  { 
+    CopyClose(_Symbol , 0 , 0 , 20 , PrecioCierre);
+  
+    if(CompruebaTendenciaAlcista() && !PositionSelect(_Symbol))
+    {   
+      trade.Buy(0.1 , _Symbol , SymbolInfoDouble(_Symbol ,SYMBOL_ASK) , PrecioCierre[0] - STOP_LOSS*Point() , PrecioCierre[0] + TAKE_PROFIT*Point() , NULL);
+    }
+  }
+  
+  
+ bool CompruebaTendenciaAlcista()
+  {
+     CopyBuffer((int)EMA200_Handle , 0 , 0 , 100 ,EMA200_List);
+     CopyBuffer((int)EMA50_Handle , 0 , 0 , 100 ,EMA50_List);
+     CopyBuffer((int)EMA20_Handle , 0 , 0 , 100 ,EMA20_List);
+      
+     if(EMA200_List[0] > EMA50_List[0] && EMA200_List[0] > EMA20_List[0] 
+     && EMA50_List[0] < EMA200_List[0] && EMA50_List[0] > EMA20_List[0] 
+     && EMA20_List[0] < EMA50_List[0] && EMA20_List[0] < EMA50_List[0] )
+     {
+         return true;
+     } 
+     
+     if(EMA200_List[0] < EMA50_List[0] && EMA200_List[0] < EMA20_List[0] 
+     && EMA50_List[0] > EMA200_List[0] && EMA50_List[0] < EMA20_List[0] 
+     && EMA20_List[0] > EMA50_List[0] && EMA20_List[0] > EMA50_List[0] )
+     {
+         return false;
+     } 
+     
+     return false;
+  }
