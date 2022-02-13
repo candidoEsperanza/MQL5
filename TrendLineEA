@@ -1,0 +1,36 @@
+#include  <Trade\Trade.mqh>
+CTrade trade;
+
+int EMAHandle200 , EMAHandle50;
+double EMA200_List[] ,EMA50_List[];
+
+int OnInit()
+{
+   EMAHandle200 = iMA(_Symbol , PERIOD_CURRENT , 200 , 0 , MODE_SMA ,PRICE_CLOSE);
+   EMAHandle50 = iMA(_Symbol , PERIOD_CURRENT , 50 , 0 , MODE_SMA ,PRICE_CLOSE);
+   
+   return(INIT_SUCCEEDED);
+}
+  
+  
+void OnTick()
+{
+   CopyBuffer(EMAHandle200 , 0 , 1 , 10 , EMA200_List);
+   CopyBuffer(EMAHandle50 , 0 , 1 , 10 ,EMA50_List);
+   
+   double VOLUME = 10;//LTCBTC
+   
+   double ASK = NormalizeDouble(SymbolInfoDouble(_Symbol , SYMBOL_ASK), _Digits);
+   double BID = NormalizeDouble(SymbolInfoDouble(_Symbol , SYMBOL_BID), _Digits);
+   
+   if(EMA200_List[1] < EMA50_List[1] && EMA200_List[0] > EMA50_List[0])
+   {
+      trade.Buy(VOLUME , _Symbol , ASK , ASK - 20*Point(), ASK + 10*Point(),"COMPRADO");
+      
+   }else if(EMA200_List[1] > EMA50_List[1] && EMA200_List[0] < EMA50_List[0])
+   {
+      trade.Sell(VOLUME , _Symbol , BID , BID + 20*Point(), BID - 10*Point() ,"VENDIDO");
+   }
+}
+
+//MODIFICAR SL Y TP
